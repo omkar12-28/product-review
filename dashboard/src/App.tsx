@@ -1,9 +1,10 @@
 import { useState, useMemo } from "react";
 import { Search, Inventory, ChatBubble, Star, LocalOffer } from "@mui/icons-material";
 import { AppBar, Toolbar, Typography, Box, Container, Grid, Stack, Select, TextField, FormControl, InputAdornment, MenuItem, } from "@mui/material";
-import { PRODUCTS } from "./lib/mock-data";
+import { PRODUCTS, type Product } from "./lib/mock-data";
 import ProductTable from "./components/ProductTable";
 import StatCard from "./components/StatCard";
+import { ImportFileButton } from "./components/ImportFileButton";
 
 const RATING_BUCKETS = [
   { value: "all", label: "All ratings" },
@@ -17,7 +18,8 @@ function App() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
   const [rating, setRating] = useState("all");
-  const dataset = PRODUCTS;
+  const [imported, setImported] = useState<Product[] | null>(null);
+  const dataset = imported || PRODUCTS;
   const categoryOptions = useMemo(
     () => Array.from(new Set(dataset.map((p) => p.category))).sort(),
     [dataset],
@@ -63,24 +65,36 @@ function App() {
       >
         <Toolbar disableGutters>
           <Container maxWidth="xl" sx={{ px: 3, py: 3 }}>
-            <Box>
-              <Typography
-                variant="h4"
-                sx={{ fontWeight: 700, letterSpacing: '-0.02em' }}
-              >
-                Product Ratings & Review Analytics
-              </Typography>
+            <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, alignItems: { md: "center" }, justifyContent: "space-between", gap: 3, }}>
+              <Box>
+                <Typography
+                  variant="h4"
+                  sx={{ fontWeight: 700, letterSpacing: '-0.02em' }}
+                >
+                  Product Ratings & Review Analytics
+                </Typography>
 
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ mt: 0.5 }}
-              >
-                Visual insights into product performance, customer feedback, and
-                engagement.
-              </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mt: 0.5 }}
+                >
+                  Visual insights into product performance, customer feedback, and
+                  engagement.
+                </Typography>
+              </Box>
+              <ImportFileButton
+                onImport={(p) => {
+                  setImported(p);
+                  setCategory("all");
+                }}
+                hasImported={imported !== null}
+                onReset={() => {
+                  setImported(null);
+                  setCategory("all");
+                }}
+              />
             </Box>
-
           </Container>
         </Toolbar>
       </AppBar>
