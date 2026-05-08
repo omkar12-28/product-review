@@ -8,10 +8,10 @@ import { ImportFileButton } from "./components/ImportFileButton";
 
 const RATING_BUCKETS = [
   { value: "all", label: "All ratings" },
-  { value: "4", label: "4★ & up" },
-  { value: "3", label: "3★ & up" },
-  { value: "2", label: "2★ & up" },
-  { value: "1", label: "1★ & up" },
+  { value: "4.0", label: "4★ & up" },
+  { value: "3.0", label: "3★ & up" },
+  { value: "2.0", label: "2★ & up" },
+  { value: "1.0", label: "1★ & up" },
 ];
 
 function App() {
