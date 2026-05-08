@@ -128,18 +128,21 @@ const ProductTable = ({ products }: { products: Product[] }) => {
                 </TableCell>
 
                 {/* Category */}
-                <TableCell>
-                  <Chip
-                    label={p.category}
-                    size="small"
-                    sx={{
-                      fontWeight: 500,
-                      borderRadius: 1,
-                      backgroundColor: "action.selected",
-                      border: "1px solid",
-                      borderColor: "divider",
-                    }}
-                  />
+                <TableCell sx={{ display: "flex", gap: .5, flexWrap: "wrap" }}>
+                  {p.category.split("|").map((c) => (
+                    <Chip
+                      key={c}
+                      label={c}
+                      size="small"
+                      sx={{
+                        fontWeight: 500,
+                        borderRadius: 1,
+                        backgroundColor: "action.selected",
+                        border: "1px solid",
+                        borderColor: "divider",
+                      }}
+                    />
+                  ))}
                 </TableCell>
 
                 {/* Price */}

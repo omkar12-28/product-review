@@ -20,10 +20,17 @@ function App() {
   const [rating, setRating] = useState("all");
   const [imported, setImported] = useState<Product[] | null>(null);
   const dataset = imported || PRODUCTS;
-  const categoryOptions = useMemo(
-    () => Array.from(new Set(dataset.map((p) => p.category))).sort(),
-    [dataset],
-  );
+  const categoryOptions = useMemo(() => {
+    return Array.from(
+      new Set(
+        dataset.flatMap((p) =>
+          String(p.category)
+            .split("|")
+            .map((c) => c.trim())
+        )
+      )
+    ).sort();
+  }, [dataset]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();

@@ -58,12 +58,11 @@ function normalize(rows: Record<string, unknown>[]): Product[] {
       ).trim();
 
       // Category
-      const category = String(
-        pick(row, [
-          "category",
-          "type",
-        ]) ?? "Uncategorized"
+      const rawCategory = String(
+        pick(row, ["category", "type"]) ?? "Uncategorized"
       ).trim();
+
+      const category = [...new Set(rawCategory.split("|"))].join(" | ");
 
       // Prices
       const discountedPrice = Number(
