@@ -6,6 +6,7 @@ import ProductTable from "./components/ProductTable";
 import StatCard from "./components/StatCard";
 import { ImportFileButton } from "./components/ImportFileButton";
 import axios from "axios";
+import { ProductsPerCategoryChart, TopReviewedChart, DiscountHistogram, CategoryAvgRatingChart } from "./components/ChartCard";
 
 const RATING_BUCKETS = [
   { value: "all", label: "All ratings" },
@@ -163,6 +164,20 @@ function App() {
               value={stats.avgDiscount}
               icon={LocalOffer}
             />
+          </Grid>
+        </Grid>
+        <Grid container spacing={2} sx={{ mt: 1 }}>
+          <Grid size={{ xs: 12, lg: 6 }}>
+            <ProductsPerCategoryChart products={dataset} />
+          </Grid>
+          <Grid size={{ xs: 12, lg: 6 }}>
+            <TopReviewedChart products={dataset} />
+          </Grid>
+          <Grid size={{ xs: 12, lg: 6 }}>
+            <DiscountHistogram products={dataset} />
+          </Grid>
+          <Grid size={{ xs: 12, lg: 6 }}>
+            <CategoryAvgRatingChart products={dataset} />
           </Grid>
         </Grid>
         <Box
