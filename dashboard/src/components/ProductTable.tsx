@@ -153,7 +153,7 @@ const ProductTable = ({ products }: { products: Product[] }) => {
                     fontWeight: 500,
                   }}
                 >
-                  ${p.price.toFixed(2)}
+                  ${p.discountedPrice}
                 </TableCell>
 
                 {/* Discount */}
@@ -171,7 +171,7 @@ const ProductTable = ({ products }: { products: Product[] }) => {
                       fontWeight: 500,
                     }}
                   >
-                    {p.discount}%
+                    {p.discountPercent}%
                   </Typography>
                 </TableCell>
 
@@ -201,7 +201,7 @@ const ProductTable = ({ products }: { products: Product[] }) => {
                   align="right"
                   sx={{ fontVariantNumeric: "tabular-nums" }}
                 >
-                  {p.reviewCount.toLocaleString()}
+                  {p.reviewCount}
                 </TableCell>
               </TableRow>
             ))}

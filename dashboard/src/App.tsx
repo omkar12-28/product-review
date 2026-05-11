@@ -1,10 +1,11 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Search, Inventory, ChatBubble, Star, LocalOffer } from "@mui/icons-material";
 import { AppBar, Toolbar, Typography, Box, Container, Grid, Stack, Select, TextField, FormControl, InputAdornment, MenuItem, } from "@mui/material";
-import { PRODUCTS, type Product } from "./lib/mock-data";
+import { type Product } from "./lib/mock-data";
 import ProductTable from "./components/ProductTable";
 import StatCard from "./components/StatCard";
 import { ImportFileButton } from "./components/ImportFileButton";
+import axios from "axios";
 
 const RATING_BUCKETS = [
   { value: "all", label: "All ratings" },
@@ -19,8 +20,31 @@ function App() {
   const [category, setCategory] = useState("all");
   const [rating, setRating] = useState("all");
   const [imported, setImported] = useState<Product[] | null>(null);
-  const dataset = imported || PRODUCTS;
+  const [products, setProducts] = useState<Product[]>([]);
+  
+  const getProducts = async () => {
+    try {
+      const API = "http://localhost:5000/api/products";
+      const res = await axios.get(API);
+
+      setProducts(res.data?.data || []);
+    } catch (error) {
+      console.error("Failed to fetch products:", error);
+      setProducts([]);
+    }
+  };
+
+  useEffect(() => {
+    getProducts();
+  }, []);
+
+  const dataset = useMemo(() => {
+    return (imported?.length ? imported : products) || [];
+  }, [imported, products]);
+  
   const categoryOptions = useMemo(() => {
+    if (!dataset.length) return [];
+
     return Array.from(
       new Set(
         dataset.flatMap((p) =>
@@ -33,8 +57,11 @@ function App() {
   }, [dataset]);
 
   const filtered = useMemo(() => {
+    if (!dataset || dataset.length === 0) return [];
+
     const q = query.trim().toLowerCase();
     const minRating = rating === "all" ? 0 : Number(rating);
+
     return dataset.filter((p) => {
       if (q && !p.name.toLowerCase().includes(q)) return false;
       if (category !== "all" && p.category !== category) return false;
@@ -44,12 +71,14 @@ function App() {
   }, [query, category, rating, dataset]);
 
   const stats = useMemo(() => {
+    if (!filtered || filtered.length === 0) return { total: 0, totalReviews: 0, avgRating: "0.00", avgDiscount: "0.0%" };
+
     const totalReviews = filtered.reduce((s, p) => s + p.reviewCount, 0);
     const avgRating = filtered.length
       ? filtered.reduce((s, p) => s + p.rating, 0) / filtered.length
       : 0;
     const avgDiscount = filtered.length
-      ? filtered.reduce((s, p) => s + p.discount, 0) / filtered.length
+      ? filtered.reduce((s, p) => s + p.discountPercent, 0) / filtered.length
       : 0;
     return {
       total: filtered.length,

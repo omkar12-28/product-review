@@ -7,6 +7,7 @@ import {
 import type { Product } from "../lib/mock-data";
 import * as XLSX from "xlsx";
 import Papa from "papaparse";
+import axios from "axios";
 
 interface ImportFileButtonProps {
   onImport: (products: Product[]) => void;
@@ -135,9 +136,9 @@ function normalize(rows: Record<string, unknown>[]): Product[] {
 
         reviewCount: Number.isFinite(reviewCount)
           ? Math.max(
-              0,
-              Math.floor(reviewCount)
-            )
+            0,
+            Math.floor(reviewCount)
+          )
           : 0,
       } as Product;
     })
@@ -178,51 +179,62 @@ export function ImportFileButton({
     }));
   };
 
+  const importProductsAPI = async (file: File) => {
+    const API = "http://localhost:5000/api/products";
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await axios.post(`${API}/import`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return res.data;
+  };
+
   const handleFile = async (file: File) => {
     setLoading(true);
+
     try {
       const ext = file.name.split(".").pop()?.toLowerCase();
-      let rows: Record<string, unknown>[] = [];
-      if (ext === "csv") {
-        const text = await file.text();
-        const parsed = Papa.parse<Record<string, unknown>>(text, {
-          header: true,
-          skipEmptyLines: true,
-        });
-        rows = parsed.data;
-      } else if (ext === "xlsx" || ext === "xls") {
-        const buf = await file.arrayBuffer();
-        const wb = XLSX.read(buf, { type: "array" });
-        const sheet = wb.Sheets[wb.SheetNames[0]];
-        rows = XLSX.utils.sheet_to_json(sheet);
-      } else {
-        showSnackbar(
-          "Unsupported file type. Use .csv, .xlsx, or .xls",
-          "error",
-        );
+
+      if (!ext || !["csv", "xlsx", "xls"].includes(ext)) {
+        showSnackbar("Only CSV or Excel files are allowed", "error");
         return;
       }
-      const products = normalize(rows);
-      if (products.length === 0) {
-        showSnackbar(
-          "No valid rows found. Expected columns: name, category, price, discount, rating, reviewCount",
-          "error",
-        );
+
+      const MAX_SIZE_MB = 5;
+
+      if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+        showSnackbar("File too large (max 5MB)", "error");
         return;
       }
-      onImport(products);
+
+      const response = await importProductsAPI(file);
+      if (!response?.success && response?.message) {
+        showSnackbar(response.message, "error");
+        return;
+      }
+
+      const count = response?.count || 0;
+
       showSnackbar(
-        `Imported ${products.length} products from ${file.name}`,
-        "success",
+        `Successfully imported ${count} products from ${file.name}`,
+        "success"
       );
+
+      // optional: refresh UI after import
+      onImport(response?.data || []);
+
     } catch (e) {
       showSnackbar(
-        "Failed to parse file: " +
-          (e instanceof Error ? e.message : "unknown error"),
-        "error",
+        e instanceof Error ? e.message : "Import failed",
+        "error"
       );
     } finally {
       setLoading(false);
+
       if (inputRef.current) inputRef.current.value = "";
     }
   };
